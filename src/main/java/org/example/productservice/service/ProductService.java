@@ -81,6 +81,35 @@ public class ProductService {
         return mapToResponse(updatedProduct);
     }
 
+    @Transactional
+    @CacheEvict(value = "products", key = "#p0")
+    public void decreaseStock(Long productId, Integer quantity) {
+
+        if (quantity == null || quantity <= 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Số lượng phải lớn hơn 0"
+            );
+        }
+
+        int updated = productRepository.decreaseStock(
+                productId,
+                quantity
+        );
+
+        if (updated == 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Sản phẩm không tồn tại hoặc không đủ tồn kho"
+            );
+        }
+
+        System.out.println(
+                "Đã trừ " + quantity
+                        + " sản phẩm ID " + productId
+        );
+    }
+
     // Entity -> DTO, không trả trực tiếp JPA Entity ra API
     private ProductResponseDTO mapToResponse(Product product) {
         return new ProductResponseDTO(

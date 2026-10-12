@@ -8,6 +8,7 @@ import org.example.productservice.dto.ProductResponseDTO;
 import org.example.productservice.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.example.productservice.service.FlashSaleService;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final FlashSaleService flashSaleService;
 
     // POST /api/v1/products - Tạo sản phẩm
     @PostMapping
@@ -50,6 +52,23 @@ public class ProductController {
         return ResponseEntity.ok(
                 productService.updateProduct(id, request.name())
         );
+    }
+
+    @PutMapping("/{id}/decrease-stock")
+    public ResponseEntity<Void> decreaseStock(
+            @PathVariable Long id,
+            @RequestBody DecreaseStockRequest request
+    ) {
+
+        flashSaleService.sellProduct(
+                id,
+                request.quantity()
+        );
+
+        return ResponseEntity.noContent().build();
+    }
+
+    public record DecreaseStockRequest(Integer quantity) {
     }
 
     public record UpdateProductRequest(
